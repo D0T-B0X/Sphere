@@ -1,0 +1,4 @@
+#pragma once
+
+#define VSHADER_PATH "@VERTEX_PATH@"
+#define FSHADER_PATH "@FRAGMENT_PATH@"
