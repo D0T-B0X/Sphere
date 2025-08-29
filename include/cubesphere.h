@@ -16,6 +16,8 @@ public:
     const unsigned int* getIndexData() const;
     const size_t getIndexCount() const;
     const size_t getIndexDataSize() const;
+    const unsigned int getSubdivisions() const;
+    const float getRadius() const;
 
 private:
 

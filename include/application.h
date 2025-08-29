@@ -3,6 +3,9 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <vector>
@@ -14,7 +17,7 @@ class App {
 public:
     // Constructor to initiate the application with the necessary parameters.
     App(uint16_t width, uint16_t height, const char* name) 
-        : window(nullptr), VBO(0), VAO(0), sphere(0.7f, 1)
+        : window(nullptr), VBO(0), VAO(0), sphere(0.7f, 10), light(0.1f, 16)
     {
         init(); // Initialize glfw window hints
         createWindow(width, height, name); // Create glfw Window
@@ -22,9 +25,6 @@ public:
 
         // Load shader files and compile them
         ourShader.load(VSHADER_PATH, FSHADER_PATH);
-
-        sphere.setRadius(0.3f);
-        sphere.setSubdivisions(4);
 
         // Sphere Data accumulation and rendering
         const float* Vertices = sphere.getVertexData();
@@ -48,14 +48,22 @@ public:
     }
 
     // Function that runs the program.
-    void run() {        
+    void run() {
+        
         while (!glfwWindowShouldClose(window)) {
             processInput(window);
 
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            glm::mat4 trans = glm::mat4(1.0f);
+            trans = glm::translate(trans, glm::vec3(glm::cos((float)glfwGetTime()), 0.0f, sin((float)glfwGetTime())));
+            trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 1.0f));
+
             ourShader.use();
+            unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+            glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
             glBindVertexArray(VAO);
 
             glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
@@ -77,6 +85,7 @@ private:
     unsigned int EBO;
     Shader ourShader;
     CubeSphere sphere;
+    CubeSphere light;
     size_t indexCount;
 
     // Initialize GLFW with all necessary parameters.
@@ -136,10 +145,48 @@ private:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
+    void updateVertexBuffer() {
+        const float* vertices = sphere.getVertexData();
+        const size_t verticesSize = sphere.getVertexDataSize();
+        const unsigned int* indices = sphere.getIndexData();
+        const size_t indicesSize = sphere.getIndexDataSize();
+
+        indexCount = sphere.getIndexCount();
+
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+        glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
+
+        glBindVertexArray(0);
+    }
+
     // Handle user input.
     void processInput(GLFWwindow* window) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, true);
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+            sphere.setSubdivisions(sphere.getSubdivisions() + 1);
+            updateVertexBuffer();
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+            sphere.setSubdivisions(sphere.getSubdivisions() - 1);
+            updateVertexBuffer();
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            sphere.setRadius(sphere.getRadius() - 0.01f);
+            updateVertexBuffer();
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            sphere.setRadius(sphere.getRadius() + 0.01f);
+            updateVertexBuffer();
         }
     }
 

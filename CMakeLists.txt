@@ -13,7 +13,12 @@ configure_file(
     ${CMAKE_BINARY_DIR}/config.h
 )
 
-add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp ${CMAKE_SOURCE_DIR}/src/cubesphere.cpp ${CMAKE_SOURCE_DIR}/src/glad.c)
+add_executable(
+    ${PROJECT_NAME} 
+    ${CMAKE_SOURCE_DIR}/src/main.cpp 
+    ${CMAKE_SOURCE_DIR}/src/cubesphere.cpp
+    ${CMAKE_SOURCE_DIR}/src/shader.cpp 
+    ${CMAKE_SOURCE_DIR}/src/glad.c)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLFW_INCLUDE_DIRECTORIES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)

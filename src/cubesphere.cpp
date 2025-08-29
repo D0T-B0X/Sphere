@@ -36,6 +36,14 @@ const size_t CubeSphere::getIndexCount() const {
     return Indices.size();
 }
 
+const unsigned int CubeSphere::getSubdivisions() const {
+    return Subdivisions;
+}
+
+const float CubeSphere::getRadius() const {
+    return Radius;
+}
+
 void CubeSphere::buildVertices() {
     float n[3];
     float tmpV[3];
@@ -182,6 +190,10 @@ void CubeSphere::generateSphere() {
 
     if (Subdivisions < 1) {
         Subdivisions = 1;
+    }
+
+    if (Radius < 0.0000000f) {
+        Radius = 0.0000000f;
     }
 
     verticesPerRow = Subdivisions + 1;
