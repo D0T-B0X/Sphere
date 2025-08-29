@@ -7,14 +7,14 @@
 #include <cstdlib>
 #include <vector>
 #include "shader.h"
-#include "sphere.h"
+#include "cubesphere.h"
 #include "config.h"
 
 class App {
 public:
     // Constructor to initiate the application with the necessary parameters.
     App(uint16_t width, uint16_t height, const char* name) 
-        : window(nullptr), VBO(0), VAO(0) 
+        : window(nullptr), VBO(0), VAO(0), sphere(0.7f, 1)
     {
         init(); // Initialize glfw window hints
         createWindow(width, height, name); // Create glfw Window
@@ -22,6 +22,24 @@ public:
 
         // Load shader files and compile them
         ourShader.load(VSHADER_PATH, FSHADER_PATH);
+
+        sphere.setRadius(0.3f);
+        sphere.setSubdivisions(4);
+
+        // Sphere Data accumulation and rendering
+        const float* Vertices = sphere.getVertexData();
+        const unsigned int* Indices = sphere.getIndexData();
+        const size_t verticesSize = sphere.getVertexDataSize();
+        const size_t indicesSize = sphere.getIndexDataSize();
+
+        indexCount = sphere.getIndexCount();
+
+        setupVertexBuffer(
+            Vertices,
+            verticesSize,
+            Indices,
+            indicesSize
+        );
     }
 
     // Getter function to get a reference of the active window.
@@ -40,7 +58,7 @@ public:
             ourShader.use();
             glBindVertexArray(VAO);
 
-            glDrawElements(GL_TRIANGLES, 60, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -58,6 +76,8 @@ private:
     unsigned int VAO;
     unsigned int EBO;
     Shader ourShader;
+    CubeSphere sphere;
+    size_t indexCount;
 
     // Initialize GLFW with all necessary parameters.
     void init() {
@@ -95,7 +115,7 @@ private:
         }
     }
 
-    void setupVertexBuffer(float* vertices, size_t verticesSize, unsigned int* indices, size_t indicesSize) {
+    void setupVertexBuffer(const float* vertices, const size_t verticesSize, const unsigned int* indices, const size_t indicesSize) {
         glGenBuffers(1, &VBO);
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &EBO);
