@@ -7,17 +7,20 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <string>
+#include <sstream>
 #include <cstdlib>
 #include <vector>
 #include "shader.h"
 #include "cubesphere.h"
+#include "camera.h"
 #include "config.h"
 
 class App {
 public:
     // Constructor to initiate the application with the necessary parameters.
     App(uint16_t width, uint16_t height, const char* name) 
-        : window(nullptr), VBO(0), VAO(0), sphere(0.7f, 10), light(0.1f, 16)
+        : window(nullptr), VBO(0), VAO(0), sphere(0.7f, 2), camera(glm::vec3(0.0f, 0.0f, 3.0f))
     {
         init(); // Initialize glfw window hints
         createWindow(width, height, name); // Create glfw Window
@@ -51,19 +54,18 @@ public:
     void run() {
         
         while (!glfwWindowShouldClose(window)) {
+            float currentFrame = (float)glfwGetTime();
+            deltaTime = currentFrame - lastFrame;
+            lastFrame = currentFrame;
+
+            displayFrameRate(deltaTime);
+
             processInput(window);
 
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glm::mat4 trans = glm::mat4(1.0f);
-            trans = glm::translate(trans, glm::vec3(glm::cos((float)glfwGetTime()), 0.0f, sin((float)glfwGetTime())));
-            trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 1.0f));
-
             ourShader.use();
-            unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-            glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-
             glBindVertexArray(VAO);
 
             glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
@@ -80,13 +82,25 @@ private:
 
     // Window object.
     GLFWwindow* window;
+
+    // Vertex render buffers.
     unsigned int VBO;
     unsigned int VAO;
     unsigned int EBO;
+    
+    // Shader class instance.
     Shader ourShader;
+
+    // Sphere class instance and index data.
     CubeSphere sphere;
-    CubeSphere light;
     size_t indexCount;
+
+    // frame time difference.
+    float deltaTime;
+    float lastFrame = 0.0f;
+
+    // Camera class instance.
+    Camera camera;
 
     // Initialize GLFW with all necessary parameters.
     void init() {
@@ -169,6 +183,7 @@ private:
             glfwSetWindowShouldClose(window, true);
         }
 
+        // Control Sphere dimensions.
         if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
             sphere.setSubdivisions(sphere.getSubdivisions() + 1);
             updateVertexBuffer();
@@ -179,20 +194,70 @@ private:
             updateVertexBuffer();
         }
 
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
             sphere.setRadius(sphere.getRadius() - 0.01f);
             updateVertexBuffer();
         }
 
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
             sphere.setRadius(sphere.getRadius() + 0.01f);
             updateVertexBuffer();
+        }
+
+        // Control camera movement.
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            camera.processKeyboard(cameraMovement::FORWARD, deltaTime);
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            camera.processKeyboard(cameraMovement::BACKWARD, deltaTime);
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            camera.processKeyboard(cameraMovement::LEFT, deltaTime);
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            camera.processKeyboard(cameraMovement::RIGHT, deltaTime);
         }
     }
 
     // Resize window.
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
         glViewport(0, 0, width, height);
+    }
+
+    void displayFrameRate(float deltaTime) const {
+
+        static bool first = true;
+        std::ostringstream oss;
+        std::string title;
+
+        static float timeSinceLastDisplay = 0.0f;
+        timeSinceLastDisplay += deltaTime;
+
+        if (first) {
+            unsigned int frameRate = 1 / deltaTime;
+            
+            oss << APP_NAME << " | FPS : " << frameRate;
+            title = oss.str();
+
+            glfwSetWindowTitle(window, title.c_str());
+
+            first = false;
+        }
+
+        if (timeSinceLastDisplay > 0.1f) {
+            unsigned int frameRate = 1 / deltaTime;
+
+            oss.clear();
+            oss << APP_NAME << " | FPS : " << frameRate;
+            title = oss.str();
+
+            glfwSetWindowTitle(window, title.c_str());
+
+            timeSinceLastDisplay = 0.0f;
+        }
     }
 
     void cleanup() {

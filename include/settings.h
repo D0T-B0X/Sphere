@@ -3,8 +3,8 @@
 
 // You can change the initial window's width
 // and height dimensions using there constants.
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1200;
+const unsigned int SCR_HEIGHT = 900;
 
 // This constant defines the window's name
 // Change this to whatever you like.

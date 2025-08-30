@@ -18,6 +18,7 @@ add_executable(
     ${CMAKE_SOURCE_DIR}/src/main.cpp 
     ${CMAKE_SOURCE_DIR}/src/cubesphere.cpp
     ${CMAKE_SOURCE_DIR}/src/shader.cpp 
+    ${CMAKE_SOURCE_DIR}/src/camera.cpp
     ${CMAKE_SOURCE_DIR}/src/glad.c)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLFW_INCLUDE_DIRECTORIES})

@@ -6,6 +6,7 @@ CubeSphere::CubeSphere(float radius, unsigned int subs) : Radius(radius), Subdiv
     generateSphere();
 }
 
+// Setter functions
 void CubeSphere::setRadius(float radius) {
     Radius = radius;
     generateSphere();
@@ -16,6 +17,7 @@ void CubeSphere::setSubdivisions(unsigned int subs) {
     generateSphere();
 }
 
+// Getter functions
 const float* CubeSphere::getVertexData() const {
     return Vertices.data();
 }
@@ -167,7 +169,7 @@ float* CubeSphere::scaleVectors(float v[3], float radius) {
 
 // Normalize vertices to form the sphere. 
 void CubeSphere::normalizeVectors(const float v[3], float n[3]) {
-    const float EPSILON = 0.00000f;
+    const float EPSILON = 0.000001f;
 
     float mag = sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 
@@ -179,11 +181,9 @@ void CubeSphere::normalizeVectors(const float v[3], float n[3]) {
     }
 }
 
-void CubeSphere::clearArrays() {
-    Vertices.clear();
-    Indices.clear();
-}
-
+// This function makes the final call 
+// to generate the required vertices 
+// and indices for the sphere.
 void CubeSphere::generateSphere() {
 
     clearArrays();
@@ -192,8 +192,8 @@ void CubeSphere::generateSphere() {
         Subdivisions = 1;
     }
 
-    if (Radius < 0.0000000f) {
-        Radius = 0.0000000f;
+    if (Radius < 0.0000001f) {
+        Radius = 0.0000001f;
     }
 
     verticesPerRow = Subdivisions + 1;
@@ -201,4 +201,9 @@ void CubeSphere::generateSphere() {
 
     buildVertices();
     calculateIndices();
+}
+
+void CubeSphere::clearArrays() {
+    Vertices.clear();
+    Indices.clear();
 }
