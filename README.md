@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Sphere** is a modern C++ OpenGL application that renders a cube-based sphere mesh, subdividing the surface into six equal-area faces. The project is designed for extensibility and experimentation, making it ideal for graphics programming, collision detection, and particle simulation research.
+**Sphere** is a modern C++ OpenGL application that renders a cube-based sphere mesh, subdividing the surface into six equal-area faces. The project is designed for extensibility and experimentation, making it ideal for graphics programming, collision detection, and particle simulation research. This project is still in its early stages and active developemnt. Stay tuned for updates.
 
 ## Features
 
