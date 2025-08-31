@@ -2,7 +2,9 @@
 
 ## Overview
 
-**Sphere** is a modern C++ OpenGL application that renders a cube-based sphere mesh, subdividing the surface into six equal-area faces. The project is designed for extensibility and experimentation, making it ideal for graphics programming, collision detection, and particle simulation research. This project is still in its early stages and active developemnt. Stay tuned for updates.
+**Sphere** is a modern C++ OpenGL application that renders a cube-based sphere mesh, subdividing the surface into six equal-area faces. The project is designed for extensibility and experimentation, making it ideal for graphics programming, collision detection, and particle simulation research.
+
+> **Status:** Early development. Features and APIs may change. Stay tuned for updates!
 
 ## Features
 
@@ -11,7 +13,7 @@
 - **GLFW** for window/context management and input handling
 - **GLAD** for OpenGL function loading
 - **GLSL shaders** for customizable vertex and fragment processing
-- **Camera controls** for interactive navigation
+- **Camera controls** for interactive navigation (mouse and keyboard)
 - **Live FPS display** in the window title
 - **Modular codebase** for easy extension (collision, particles, etc.)
 
@@ -38,12 +40,15 @@ make
 
 ### Controls
 
-| Key        | Action                        |
-|------------|------------------------------|
-| `W/A/S/D`  | Move camera (forward/left/back/right) |
-| `E/Q`      | Increase/decrease subdivisions |
-| `I/P`      | Decrease/increase sphere radius |
-| `ESC`      | Exit application              |
+| Key        | Action                                 |
+|------------|----------------------------------------|
+| `W/A/S/D`  | Move camera (forward/left/back/right)  |
+| `E/Q`      | Increase/decrease subdivisions         |
+| `I/P`      | Decrease/increase sphere radius        |
+| `SPACE`    | Move camera up                        |
+| `LEFT CTRL`| Move camera down                      |
+| Mouse      | Look around (hold window focus)        |
+| `ESC`      | Exit application                      |
 
 ## Project Structure
 
@@ -63,12 +68,20 @@ This codebase is designed for further development. You can:
 
 - Implement **collision detection** between spheres and other objects
 - Add **particle systems** and simulate interactions
-- Experiment with **physics engines**
-- Enhance rendering with **lighting**.
+- Experiment with **physics engines** or custom mechanics
+- Enhance rendering with **lighting**
+- Add more geometric primitives or simulation features
+
+## Known Issues & TODO
+
+- Only basic ambient lighting is implemented
+- No collision or physics yet (planned)
+- Camera controls may be improved for smoother experience
+- More shader effects and mesh types to come
 
 ## License
 
-This project is released under the MIT License. See LICENSE for details.
+This project is released under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
@@ -77,4 +90,4 @@ For questions, suggestions, or contributions, please open an issue or submit a p
 
 ---
 
-*Ready to build your own graphics and simulation experiments? Start with Sphere!*
+*Ready to build your own graphics and simulation experiments?
