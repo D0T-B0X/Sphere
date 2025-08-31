@@ -3,6 +3,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <glm/gtc/type_ptr.hpp>
 #include "shader.h"
 
 void Shader::load(const char* vertexPath, const char* fragmentPath) {
@@ -93,6 +94,10 @@ void Shader::setInt(std::string &name, int value) {
 
 void Shader::setFloat(std::string &name, float value) {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+void Shader::setMat4(const char* name, glm::mat4 mat) {
+    glUniformMatrix4fv(glGetUniformLocation(ID, name), 1, GL_FALSE, &mat[0][0]);
 }
 
 void Shader::checkCompileErrors(unsigned int shader, const char* type) {

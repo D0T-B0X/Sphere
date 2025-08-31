@@ -14,6 +14,7 @@
 #include "shader.h"
 #include "cubesphere.h"
 #include "camera.h"
+#include "settings.h"
 #include "config.h"
 
 class App {
@@ -66,6 +67,9 @@ public:
             glClear(GL_COLOR_BUFFER_BIT);
 
             ourShader.use();
+
+            generateCameraView();
+
             glBindVertexArray(VAO);
 
             glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
@@ -95,12 +99,15 @@ private:
     CubeSphere sphere;
     size_t indexCount;
 
-    // frame time difference.
-    float deltaTime;
-    float lastFrame = 0.0f;
-
     // Camera class instance.
     Camera camera;
+    float lastX = SCR_WIDTH / 2.0f;
+    float lastY = SCR_HEIGHT / 2.0f;
+    bool firstMouse = true;
+
+    // frame timing.
+    float deltaTime;
+    float lastFrame = 0.0f;
 
     // Initialize GLFW with all necessary parameters.
     void init() {
@@ -127,7 +134,11 @@ private:
         }
 
         glfwMakeContextCurrent(window);
+        glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+        glfwSetCursorPosCallback(window, mouseCallback);
+
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
     // Load GLAD.
@@ -175,6 +186,17 @@ private:
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
 
         glBindVertexArray(0);
+    }
+
+    void generateCameraView() {
+        glm::mat4 projection = glm::perspective(glm::radians(FOV), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        ourShader.setMat4("projection", projection);
+
+        glm::mat4 view = camera.getViewMatrix();
+        ourShader.setMat4("view", view);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        ourShader.setMat4("model", model);
     }
 
     // Handle user input.
@@ -225,6 +247,24 @@ private:
     // Resize window.
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
         glViewport(0, 0, width, height);
+    }
+
+    static void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
+        App* app = static_cast<App*>(glfwGetWindowUserPointer(window));
+
+        if (app) {
+            app->handleMouse(xpos, ypos);
+        }
+    }
+
+    void handleMouse(double xpos, double ypos) {
+        float xoffset = static_cast<float>(xpos) - lastX;
+        float yoffset = lastY - static_cast<float>(ypos);
+
+        lastX = static_cast<float>(xpos);
+        lastY = static_cast<float>(ypos);
+
+        camera.processMouseMovement(xoffset, yoffset);
     }
 
     void displayFrameRate(float deltaTime) const {

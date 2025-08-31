@@ -12,7 +12,7 @@ Camera::Camera(
     {
 
         Position = position;
-        Up = up;
+        WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
         updateCameraVectors();
@@ -38,6 +38,7 @@ Camera::Camera(
         Pitch = pitch;
         updateCameraVectors();
 } 
+
 
 glm::mat4 Camera::getViewMatrix() {
     return glm::lookAt(Position, Position + Front, Up);

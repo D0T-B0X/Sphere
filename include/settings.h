@@ -10,4 +10,7 @@ const unsigned int SCR_HEIGHT = 900;
 // Change this to whatever you like.
 const char* APP_NAME = "Sphere";
 
+// Camera settings
+float FOV = 45.0f;
+
 #endif
