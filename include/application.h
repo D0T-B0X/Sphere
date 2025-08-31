@@ -242,6 +242,14 @@ private:
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
             camera.processKeyboard(cameraMovement::RIGHT, deltaTime);
         }
+
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            camera.processKeyboard(cameraMovement::UP, deltaTime);
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+            camera.processKeyboard(cameraMovement::DOWN, deltaTime);
+        }
     }
 
     // Resize window.
