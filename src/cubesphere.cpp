@@ -1,7 +1,15 @@
 #include <cmath>
 #include "cubesphere.h"
 
-// Constructor for the CubeSphere class 
+// Constructors for the CubeSphere class
+CubeSphere::CubeSphere() : Radius(1.0f), Subdivisions(16) {
+    generateSphere();
+}
+
+CubeSphere::CubeSphere(float radius) : Radius(radius), Subdivisions(16) {
+    generateSphere();
+}
+
 CubeSphere::CubeSphere(float radius, unsigned int subs) : Radius(radius), Subdivisions(subs) {
     generateSphere();
 }

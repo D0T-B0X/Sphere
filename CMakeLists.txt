@@ -16,6 +16,7 @@ configure_file(
 add_executable(
     ${PROJECT_NAME} 
     ${CMAKE_SOURCE_DIR}/src/main.cpp 
+    ${CMAKE_SOURCE_DIR}/src/renderer.cpp
     ${CMAKE_SOURCE_DIR}/src/cubesphere.cpp
     ${CMAKE_SOURCE_DIR}/src/shader.cpp 
     ${CMAKE_SOURCE_DIR}/src/camera.cpp

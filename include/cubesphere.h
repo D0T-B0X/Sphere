@@ -8,6 +8,8 @@
 
 class CubeSphere {
 public:
+    CubeSphere();
+    CubeSphere(float radius);
     CubeSphere(float radius, unsigned int subs);
     void setRadius(float radius);
     void setSubdivisions(unsigned int subs);

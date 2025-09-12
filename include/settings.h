@@ -3,14 +3,14 @@
 
 // You can change the initial window's width
 // and height dimensions using there constants.
-const unsigned int SCR_WIDTH = 1200;
-const unsigned int SCR_HEIGHT = 900;
+#define SCR_WIDTH 1200U
+#define SCR_HEIGHT 900U
 
 // This constant defines the window's name
 // Change this to whatever you like.
-const char* APP_NAME = "Sphere";
+constexpr const char* APP_NAME = "Sphere";
 
 // Camera settings
-float FOV = 45.0f;
+constexpr float FOV = 45.0f;
 
 #endif

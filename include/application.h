@@ -1,320 +1,53 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <string>
-#include <sstream>
-#include <cstdlib>
-#include <vector>
-#include "shader.h"
-#include "cubesphere.h"
-#include "camera.h"
+#include "renderer.h"
 #include "settings.h"
-#include "config.h"
+
+struct Object {
+    CubeSphere Sphere;
+    glm::vec3 Color;
+    glm::vec3 LightingVector;
+    std::string Name;
+
+    Object() : Sphere(1.0f) {}
+    Object(std::string& name, float radius, glm::vec3 color) : Sphere(radius), Name(name), Color(color) {}
+    Object(std::string& name, float radius, glm::vec3 color, glm::vec3 lighting) : Sphere(radius), Name(name), Color(color), LightingVector(lighting) {}
+};
 
 class App {
 public:
     // Constructor to initiate the application with the necessary parameters.
-    App(uint16_t width, uint16_t height, const char* name) 
-        : window(nullptr), VBO(0), VAO(0), sphere(0.7f, 2), camera(glm::vec3(0.0f, 0.0f, 3.0f))
+    App(uint16_t width, uint16_t height, const char* name)
     {
-        init(); // Initialize glfw window hints
-        createWindow(width, height, name); // Create glfw Window
-        loadGlad(); 
+        object.Name = "Coral";
+        object.Color = glm::vec3(1.0f, 0.5f, 0.31f);
+        object.Sphere.setRadius(0.7f);
 
-        // Load shader files and compile them
-        ourShader.load(VSHADER_PATH, FSHADER_PATH);
-
-        // Sphere Data accumulation and rendering
-        const float* Vertices = sphere.getVertexData();
-        const unsigned int* Indices = sphere.getIndexData();
-        const size_t verticesSize = sphere.getVertexDataSize();
-        const size_t indicesSize = sphere.getIndexDataSize();
-
-        indexCount = sphere.getIndexCount();
-
-        setupVertexBuffer(
-            Vertices,
-            verticesSize,
-            Indices,
-            indicesSize
-        );
+        renderer.drawSphere(object.Sphere);
     }
 
     // Getter function to get a reference of the active window.
-    GLFWwindow* getWindow() const {
-        return window;
+    const GLFWwindow* getWindow() {
+        return renderer.getWindow();
     }
 
     // Function that runs the program.
     void run() {
         
-        while (!glfwWindowShouldClose(window)) {
-            float currentFrame = (float)glfwGetTime();
-            deltaTime = currentFrame - lastFrame;
-            lastFrame = currentFrame;
-
-            displayFrameRate(deltaTime);
-
-            processInput(window);
-
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            ourShader.use();
-
-            generateCameraView();
-
-            glBindVertexArray(VAO);
-
-            glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
-
-            glfwSwapBuffers(window);
-            glfwPollEvents();
-        }
-
-        // Cleanup after the program is complete.
-        cleanup();
+        // Start the render process
+        renderer.runRenderLoop();
     }
 
 private:
-
-    // Window object.
-    GLFWwindow* window;
-
-    // Vertex render buffers.
-    unsigned int VBO;
-    unsigned int VAO;
-    unsigned int EBO;
     
-    // Shader class instance.
-    Shader ourShader;
-
     // Sphere class instance and index data.
-    CubeSphere sphere;
-    size_t indexCount;
+    Object object;
 
-    // Camera class instance.
-    Camera camera;
-    float lastX = SCR_WIDTH / 2.0f;
-    float lastY = SCR_HEIGHT / 2.0f;
-    bool firstMouse = true;
-
-    // frame timing.
-    float deltaTime;
-    float lastFrame = 0.0f;
-
-    // Initialize GLFW with all necessary parameters.
-    void init() {
-        glfwInit();
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    }
-
-    // Generate an OpenGL window and set it as context.
-    void createWindow(uint16_t width, uint16_t height, const char* name) {
-        window = glfwCreateWindow(
-            width,
-            height,
-            name,
-            NULL,
-            NULL
-        );
-
-        if (window == NULL) {
-            std::cout << "Failed to create window" << std::endl;
-            glfwTerminate();
-            std::exit(-1);
-        }
-
-        glfwMakeContextCurrent(window);
-        glfwSetWindowUserPointer(window, this);
-        glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-        glfwSetCursorPosCallback(window, mouseCallback);
-
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    }
-
-    // Load GLAD.
-    void loadGlad() {
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-            std::cout << "Failed to load GLAD" << std::endl;
-            std::exit(-1);
-        }
-    }
-
-    void setupVertexBuffer(const float* vertices, const size_t verticesSize, const unsigned int* indices, const size_t indicesSize) {
-        glGenBuffers(1, &VBO);
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &EBO);
-
-        glBindVertexArray(VAO);
-
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-        glEnableVertexAttribArray(0);
-
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-
-    void updateVertexBuffer() {
-        const float* vertices = sphere.getVertexData();
-        const size_t verticesSize = sphere.getVertexDataSize();
-        const unsigned int* indices = sphere.getIndexData();
-        const size_t indicesSize = sphere.getIndexDataSize();
-
-        indexCount = sphere.getIndexCount();
-
-        glBindVertexArray(VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-        glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
-
-        glBindVertexArray(0);
-    }
-
-    void generateCameraView() {
-        glm::mat4 projection = glm::perspective(glm::radians(FOV), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        ourShader.setMat4("projection", projection);
-
-        glm::mat4 view = camera.getViewMatrix();
-        ourShader.setMat4("view", view);
-
-        glm::mat4 model = glm::mat4(1.0f);
-        ourShader.setMat4("model", model);
-    }
-
-    // Handle user input.
-    void processInput(GLFWwindow* window) {
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window, true);
-        }
-
-        // Control Sphere dimensions.
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-            sphere.setSubdivisions(sphere.getSubdivisions() + 1);
-            updateVertexBuffer();
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-            sphere.setSubdivisions(sphere.getSubdivisions() - 1);
-            updateVertexBuffer();
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
-            sphere.setRadius(sphere.getRadius() - 0.01f);
-            updateVertexBuffer();
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
-            sphere.setRadius(sphere.getRadius() + 0.01f);
-            updateVertexBuffer();
-        }
-
-        // Control camera movement.
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            camera.processKeyboard(cameraMovement::FORWARD, deltaTime);
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            camera.processKeyboard(cameraMovement::BACKWARD, deltaTime);
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            camera.processKeyboard(cameraMovement::LEFT, deltaTime);
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            camera.processKeyboard(cameraMovement::RIGHT, deltaTime);
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-            camera.processKeyboard(cameraMovement::UP, deltaTime);
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            camera.processKeyboard(cameraMovement::DOWN, deltaTime);
-        }
-    }
-
-    // Resize window.
-    static void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
-        glViewport(0, 0, width, height);
-    }
-
-    static void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-        App* app = static_cast<App*>(glfwGetWindowUserPointer(window));
-
-        if (app) {
-            app->handleMouse(xpos, ypos);
-        }
-    }
-
-    void handleMouse(double xpos, double ypos) {
-        float xoffset = static_cast<float>(xpos) - lastX;
-        float yoffset = lastY - static_cast<float>(ypos);
-
-        lastX = static_cast<float>(xpos);
-        lastY = static_cast<float>(ypos);
-
-        camera.processMouseMovement(xoffset, yoffset);
-    }
-
-    void displayFrameRate(float deltaTime) const {
-
-        static bool first = true;
-        std::ostringstream oss;
-        std::string title;
-
-        static float timeSinceLastDisplay = 0.0f;
-        timeSinceLastDisplay += deltaTime;
-
-        if (first) {
-            unsigned int frameRate = 1 / deltaTime;
-            
-            oss << APP_NAME << " | FPS : " << frameRate;
-            title = oss.str();
-
-            glfwSetWindowTitle(window, title.c_str());
-
-            first = false;
-        }
-
-        if (timeSinceLastDisplay > 0.1f) {
-            unsigned int frameRate = 1 / deltaTime;
-
-            oss.clear();
-            oss << APP_NAME << " | FPS : " << frameRate;
-            title = oss.str();
-
-            glfwSetWindowTitle(window, title.c_str());
-
-            timeSinceLastDisplay = 0.0f;
-        }
-    }
-
-    void cleanup() {
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
-        glDeleteBuffers(1, &EBO);
-        ourShader.terminate();
-        glfwTerminate();
-    }
+    // Render engine object.
+    Renderer renderer;
 };
 
 #endif
