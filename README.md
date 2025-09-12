@@ -2,92 +2,91 @@
 
 ## Overview
 
-**Sphere** is a modern C++ OpenGL application that renders a cube-based sphere mesh, subdividing the surface into six equal-area faces. The project is designed for extensibility and experimentation, making it ideal for graphics programming, collision detection, and particle simulation research.
-
-> **Status:** Early development. Features and APIs may change. Stay tuned for updates!
+Sphere renders a cube-derived sphere mesh (cube faces uniformly subdivided and projected to a sphere) using modern OpenGL. It is a sandbox for extending into collision tests, particle / physics experiments, and rendering techniques.
 
 ## Features
 
-- **Cube-based sphere mesh** with adjustable subdivisions and radius
-- **Real-time rendering** using OpenGL 4.3+
-- **GLFW** for window/context management and input handling
-- **GLAD** for OpenGL function loading
-- **GLSL shaders** for customizable vertex and fragment processing
-- **Camera controls** for interactive navigation (mouse and keyboard)
-- **Live FPS display** in the window title
-- **Modular codebase** for easy extension (collision, particles, etc.)
+- Parametric cube-sphere (adjustable radius & subdivisions)
+- Modern OpenGL (core 4.3) + GLFW + GLAD + GLM
+- Basic ambient fragment shading
+- Camera (WASD + vertical + mouse look)
+- FPS title update
 
-## Getting Started
+## Build (Linux)
 
-### Prerequisites
+Dependencies (Ubuntu/Debian example):
 
-- C++17 or newer compiler
-- [GLFW](https://www.glfw.org/) development libraries
-- [GLM](https://github.com/g-truc/glm) math library
-- [GLAD](https://glad.dav1d.de/) loader (included)
-- CMake ≥ 3.19
+```sh
+sudo apt update
+sudo apt install build-essential cmake pkg-config libglfw3-dev
+```
 
-### Build Instructions
+Clone & build:
 
 ```sh
 git clone https://github.com/D0T-B0X/Sphere.git
 cd Sphere
 mkdir build && cd build
 cmake ..
-make
+make -j
 ./Sphere
 ```
 
-### Controls
+## Controls
 
-| Key        | Action                                 |
-|------------|----------------------------------------|
-| `W/A/S/D`  | Move camera (forward/left/back/right)  |
-| `E/Q`      | Increase/decrease subdivisions         |
-| `I/P`      | Decrease/increase sphere radius        |
-| `SPACE`    | Move camera up                        |
-| `LEFT CTRL`| Move camera down                      |
-| Mouse      | Look around (hold window focus)        |
-| `ESC`      | Exit application                      |
+- Movement: W / A / S / D
+- Vertical: SPACE (up), LEFT CTRL (down)
+- Mouse: look (cursor locked)
+- ESC: quit
 
-## Project Structure
+## Project Layout
 
 ```
-Sphere/
-├── include/         # Header files (App, Camera, CubeSphere, Shader, etc.)
-├── src/             # Source files
-├── shaders/         # GLSL shader programs
-├── build/           # Build output (ignored by git)
-├── CMakeLists.txt   # Build configuration
-├── README.md        # Project documentation
+include/
+  Renderer/ (camera, shader, cubesphere, renderer)
+src/
+  Renderer/ (implementations)
+shaders/ (vObj.glsl, fObj.glsl)
+config.h.in -> generates build/config.h
 ```
 
-## Extending the Project
+## Core Components
 
-This codebase is designed for further development. You can:
+- **CubeSphere:** Generates vertices & indices per face, rebuilds on param change
+- **Renderer:** Window/context, GLAD load, buffers, loop, input routing
+- **Camera:** Euler Yaw/Pitch FPS-style
+- **Shader:** Minimal utility wrapper (compile/link/use, uniform setters)
 
-- Implement **collision detection** between spheres and other objects
-- Add **particle systems** and simulate interactions
-- Experiment with **physics engines** or custom mechanics
-- Enhance rendering with **lighting**
-- Add more geometric primitives or simulation features
+## Modifying Geometry
 
-## Known Issues & TODO
+Call:
 
-- Only basic ambient lighting is implemented
-- No collision or physics yet (planned)
-- Camera controls may be improved for smoother experience
-- More shader effects and mesh types to come
+```cpp
+sphere.setSubdivisions(n);
+sphere.setRadius(r);
+renderer.drawSphere(sphere); // reupload
+```
+
+## Extending Roadmap
+
+Planned:
+
+- Indexed normal & UV generation
+- Lighting models (Phong / PBR)
+- Wireframe overlay toggle
+- Collision proxy (AABB / sphere)
+- Particle system prototype
+- ImGui debug overlay
 
 ## License
 
-This project is released under the MIT License. See [LICENSE](LICENSE) for details.
+MIT
 
----
+## Credits
 
-**Contact:**  
-For questions, suggestions, or contributions, please open an issue or submit a pull request.
+- Cube-sphere concept inspiration: Song Ho Ahn
+- Libraries: GLFW, GLAD, GLM
 
----
+## Status
 
-*Ready to build your own graphics and simulation experiments?
+Early development; APIs subject to change.

@@ -16,8 +16,9 @@ class Renderer {
 public:
     Renderer();
 
+    void init();
     void drawElement();
-    void drawSphere(CubeSphere sphere);
+    void drawSphere(CubeSphere& sphere);
     void runRenderLoop();
 
     GLFWwindow* getWindow();

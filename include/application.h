@@ -3,7 +3,8 @@
 
 #include <iostream>
 #include <string>
-#include "renderer.h"
+#include "Renderer/cubesphere.h"
+#include "Renderer/renderer.h"
 #include "settings.h"
 
 struct Object {
@@ -22,10 +23,16 @@ public:
     // Constructor to initiate the application with the necessary parameters.
     App(uint16_t width, uint16_t height, const char* name)
     {
+
+        // initialize the renderer
+        renderer.init();
+
+        // define an object
         object.Name = "Coral";
         object.Color = glm::vec3(1.0f, 0.5f, 0.31f);
         object.Sphere.setRadius(0.7f);
 
+        // draw a sphere (test)
         renderer.drawSphere(object.Sphere);
     }
 
@@ -47,7 +54,7 @@ private:
     Object object;
 
     // Render engine object.
-    Renderer renderer;
+    Renderer renderer = Renderer();
 };
 
 #endif

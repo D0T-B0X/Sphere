@@ -1,7 +1,14 @@
-#include "renderer.h"
+#include "Renderer/renderer.h"
 
 // Constructor for the Renderer
-Renderer::Renderer() : camera(glm::vec3(0.0f, 0.0f, 3.0f)) {
+Renderer::Renderer() 
+    : camera(glm::vec3(0.0f, 0.0f, 3.0f)),
+      window(nullptr),
+      VBO(0), VAO(0), EBO(0),
+      indexCount(0),
+      deltaTime(0.0f) { }
+
+void Renderer::init() {
     initGlfwWindow();
     createGlfwWindow(SCR_WIDTH, SCR_HEIGHT, APP_NAME);
     loadGLAD();
@@ -14,7 +21,7 @@ void Renderer::drawElement() {
 }
 
 // Generate a sphere on the screen
-void Renderer::drawSphere(CubeSphere sphere) {
+void Renderer::drawSphere(CubeSphere& sphere) {
     const float* Vertices = sphere.getVertexData();
     const unsigned int* Indices = sphere.getIndexData();
     const size_t verticesSize = sphere.getVertexDataSize();

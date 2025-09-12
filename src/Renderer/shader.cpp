@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
-#include "shader.h"
+#include "Renderer/shader.h"
 
 void Shader::load(const char* vertexPath, const char* fragmentPath) {
     // String to store vertex and fragment shaders.

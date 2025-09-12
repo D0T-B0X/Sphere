@@ -7,6 +7,8 @@ pkg_check_modules(GLFW REQUIRED glfw3)
 set(SHADERS_DIR "${CMAKE_SOURCE_DIR}/shaders")
 set(VERTEX_PATH "${SHADERS_DIR}/vObj.glsl")
 set(FRAGMENT_PATH "${SHADERS_DIR}/fObj.glsl")
+set(RENDERER_DIR "${CMAKE_SOURCE_DIR}/include/Renderer")
+set(RENDERER_SRC_DIR "${CMAKE_SOURCE_DIR}/src/Renderer")
 
 configure_file(
     ${CMAKE_SOURCE_DIR}/config.h.in
@@ -16,10 +18,10 @@ configure_file(
 add_executable(
     ${PROJECT_NAME} 
     ${CMAKE_SOURCE_DIR}/src/main.cpp 
-    ${CMAKE_SOURCE_DIR}/src/renderer.cpp
-    ${CMAKE_SOURCE_DIR}/src/cubesphere.cpp
-    ${CMAKE_SOURCE_DIR}/src/shader.cpp 
-    ${CMAKE_SOURCE_DIR}/src/camera.cpp
+    ${RENDERER_SRC_DIR}/renderer.cpp
+    ${RENDERER_SRC_DIR}/cubesphere.cpp
+    ${RENDERER_SRC_DIR}/shader.cpp 
+    ${RENDERER_SRC_DIR}/camera.cpp
     ${CMAKE_SOURCE_DIR}/src/glad.c)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLFW_INCLUDE_DIRECTORIES})
