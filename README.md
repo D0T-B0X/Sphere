@@ -3,6 +3,8 @@
 ## Final Overview
 A minimal modern OpenGL demo rendering procedurally generated cube-spheres (cube -> projected to sphere) with a movable camera and a single Phong-lit light source (rendered as an emissive sphere). Normals are derived in the vertex shader from sphere positions (no explicit normal buffer yet). Repository is complete and no further updates are planned.
 
+![Demo](media/demo.gif)
+
 ## Features
 - Procedural cube-sphere mesh 
 - Dynamic regeneration when radius / subdivisions change
