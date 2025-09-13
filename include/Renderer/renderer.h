@@ -56,19 +56,12 @@ public:
 
 private:
 
-    unsigned int sphereVAO;
-    unsigned int sphereVBO;
-    unsigned int sphereEBO;
-
-    unsigned int lightVAO;
-    unsigned int lightVBO;
-    unsigned int lightEBO;
-
     GLFWwindow* window;
     Camera camera;
     Shader ourShader;
 
     std::vector<Sphere*> spheres;
+    Sphere* lightSphere = nullptr;
 
     float lastX = SCR_WIDTH / 2.0f;
     float lastY = SCR_HEIGHT / 2.0f;

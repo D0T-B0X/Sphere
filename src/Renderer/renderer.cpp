@@ -4,8 +4,6 @@
 Renderer::Renderer() 
     : camera(glm::vec3(0.0f, 0.0f, 3.0f)),
       window(nullptr),
-      sphereVBO(0), sphereVAO(0), sphereEBO(0),
-      lightVBO(0), lightVAO(0), lightEBO(0),
       deltaTime(0.0f) { }
 
 void Renderer::init() {
@@ -28,6 +26,7 @@ void Renderer::drawSphere(Sphere& sphere, glm::vec3 position) {
     sphere.Position = position;
     setupSphereVertexBuffer(sphere);
     spheres.push_back(&sphere);
+    if (sphere.source) lightSphere = &sphere;
 }
 
 // The main render loop of the program
@@ -45,21 +44,36 @@ void Renderer::runRenderLoop() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         ourShader.use();
-
         generateCameraView();
+
+        glm::vec3 lightPos = lightSphere ? lightSphere->Position : glm::vec3(5.0f, 5.0f, 5.0f);
+        ourShader.setVec3("lightPos", lightPos);
+
+        ourShader.setVec3("viewPos", camera.Position);
 
         // Sphere rendering
         for(Sphere* s : spheres) {
+            if (s == lightSphere) continue;
             glm::mat4 model = glm::translate(glm::mat4(1.0f), s->Position);
             ourShader.setBool("source", s->source);
-            glm::vec3 inColor = s->Color;
-            ourShader.setVec3("inColor", inColor);
+            ourShader.setVec3("inColor", s->Color);
             ourShader.setMat4("model", model);
             glBindVertexArray(s->mesh.VAO);
             glDrawElements(GL_TRIANGLES, s->mesh.indexCount, GL_UNSIGNED_INT, 0);
         }
 
+        if (lightSphere) {
+            Sphere* s = lightSphere;
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), lightSphere->Position);
+            ourShader.setBool("source", s->source);
+            ourShader.setVec3("inColor", s->Color);
+            ourShader.setVec3("lightColor", s->Color);
+            ourShader.setMat4("model", model);
+            glBindVertexArray(s->mesh.VAO);
+            glDrawElements(GL_TRIANGLES, s->mesh.indexCount, GL_UNSIGNED_INT, 0);
+        }
 
+        glBindVertexArray(0);
         glfwSwapBuffers(window);
         glfwPollEvents();
 

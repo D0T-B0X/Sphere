@@ -1,28 +1,25 @@
-# Sphere: OpenGL Cube-Based Sphere Renderer
+# Sphere (Archived)
 
-## Overview
-
-Sphere renders a cube-derived sphere mesh (cube faces uniformly subdivided and projected to a sphere) using modern OpenGL. It is a sandbox for extending into collision tests, particle / physics experiments, and rendering techniques.
+## Final Overview
+A minimal modern OpenGL demo rendering procedurally generated cube-spheres (cube -> projected to sphere) with a movable camera and a single Phong-lit light source (rendered as an emissive sphere). Normals are derived in the vertex shader from sphere positions (no explicit normal buffer yet). Repository is complete and no further updates are planned.
 
 ## Features
-
-- Parametric cube-sphere (adjustable radius & subdivisions)
-- Modern OpenGL (core 4.3) + GLFW + GLAD + GLM
-- Basic ambient fragment shading
-- Camera (WASD + vertical + mouse look)
-- FPS title update
+- Procedural cube-sphere mesh 
+- Dynamic regeneration when radius / subdivisions change
+- Single VAO/VBO/EBO per sphere (lazy upload with remake flag)
+- Phong lighting (ambient + diffuse + specular) with one point light
+- Light source rendered as its own emissive sphere (uniform `source`)
+- FPS camera (W/A/S/D + SPACE / CTRL + mouse look)
+- Title bar FPS update
+- OpenGL Core 4.3, GLFW, GLAD, GLM
 
 ## Build (Linux)
-
-Dependencies (Ubuntu/Debian example):
-
+Dependencies (Debian/Ubuntu example):
 ```sh
 sudo apt update
 sudo apt install build-essential cmake pkg-config libglfw3-dev
 ```
-
 Clone & build:
-
 ```sh
 git clone https://github.com/D0T-B0X/Sphere.git
 cd Sphere
@@ -33,60 +30,86 @@ make -j
 ```
 
 ## Controls
-
-- Movement: W / A / S / D
+- Move: W / A / S / D
 - Vertical: SPACE (up), LEFT CTRL (down)
-- Mouse: look (cursor locked)
+- Mouse: look (locked)
 - ESC: quit
 
 ## Project Layout
-
 ```
 include/
-  Renderer/ (camera, shader, cubesphere, renderer)
+  Renderer/
+    camera.h
+    shader.h
+    cubesphere.h
+    renderer.h
+  settings.h
+  application.h
+shaders/
+  vObj.glsl
+  fObj.glsl
 src/
-  Renderer/ (implementations)
-shaders/ (vObj.glsl, fObj.glsl)
-config.h.in -> generates build/config.h
+  main.cpp
+  Renderer/
+    renderer.cpp
+    cubesphere.cpp
+    shader.cpp
+    camera.cpp
+  glad.c
+build/ (generated)
+config.h.in -> generates build/config.h with absolute shader paths
 ```
 
-## Core Components
+## Rendering Flow
+1. App constructs persistent Sphere objects (light + geometry spheres).
+2. Renderer lazily uploads mesh data if `mesh.VAO == 0` or `remake == true`.
+3. Per-frame: camera matrices set, light + view uniforms updated, non-light spheres drawn, then light sphere.
+4. Vertex shader derives world position + per-vertex normal (from position direction).
+5. Fragment shader performs Phong lighting unless `source == true`.
 
-- **CubeSphere:** Generates vertices & indices per face, rebuilds on param change
-- **Renderer:** Window/context, GLAD load, buffers, loop, input routing
-- **Camera:** Euler Yaw/Pitch FPS-style
-- **Shader:** Minimal utility wrapper (compile/link/use, uniform setters)
+## Key Shaders
+Vertex (positions only):
+```glsl
+vec4 wp = model * vec4(aPos,1.0);
+vNormal = normalize(mat3(model) * aPos);
+```
+Fragment (Phong):
+```
+ambient + diffuse + specular (single point light)
+source branch: solid emissive
+```
 
-## Modifying Geometry
+## Limitations
+- No UVs or textures
+- No normal buffer
+- Single light source
+- No error HUD / ImGui
+- No gamma correction / HDR / shadows
+- No wireframe toggle
 
-Call:
-
+## How to Add Another Sphere
 ```cpp
-sphere.setSubdivisions(n);
-sphere.setRadius(r);
-renderer.drawSphere(sphere); // reupload
+Sphere rock;
+rock.Name = "Rock";
+rock.Color = {0.4f,0.6f,1.0f};
+rock.setRadius(0.5f);
+renderer.drawSphere(rock, {1.2f, 0.0f, 0.0f});
 ```
 
-## Extending Roadmap
-
-Planned:
-
-- Indexed normal & UV generation
-- Lighting models (Phong / PBR)
-- Wireframe overlay toggle
-- Collision proxy (AABB / sphere)
-- Particle system prototype
-- ImGui debug overlay
+## Changing Detail
+```cpp
+coral.setSubdivisions(32); // marks remake=true -> reupload next frame
+coral.setRadius(1.5f);
+```
 
 ## License
-
 MIT
 
-## Credits
+## Final Status
+Archived / read-only. Educational reference for:
+- Basic procedural mesh generation
+- Minimal shader pipeline
+- Camera + input handling
+- Simple Phong lighting
 
-- Cube-sphere concept inspiration: Song Ho Ahn
-- Libraries: GLFW, GLAD, GLM
-
-## Status
-
-Early development; APIs subject to change.
+Enjoy exploring or forking.
