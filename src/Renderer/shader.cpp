@@ -84,19 +84,23 @@ void Shader::terminate() {
     glDeleteProgram(ID);
 }
 
-void Shader::setBool(std::string &name, int value) {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
+void Shader::setBool(const char* name, int value) const {
+    glUniform1i(glGetUniformLocation(ID, name), (int)value);
 }
 
-void Shader::setInt(std::string &name, int value) {
+void Shader::setInt(std::string &name, int value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::setFloat(std::string &name, float value) {
+void Shader::setFloat(std::string &name, float value) const {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::setMat4(const char* name, glm::mat4 mat) {
+void Shader::setVec3(const char* name, const glm::vec3& vec3) const {
+    glUniform3fv(glGetUniformLocation(ID, name), 1, &vec3[0]);
+}
+
+void Shader::setMat4(const char* name, glm::mat4 mat) const {
     glUniformMatrix4fv(glGetUniformLocation(ID, name), 1, GL_FALSE, &mat[0][0]);
 }
 

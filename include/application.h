@@ -1,22 +1,7 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include <iostream>
-#include <string>
-#include "Renderer/cubesphere.h"
 #include "Renderer/renderer.h"
-#include "settings.h"
-
-struct Object {
-    CubeSphere Sphere;
-    glm::vec3 Color;
-    glm::vec3 LightingVector;
-    std::string Name;
-
-    Object() : Sphere(1.0f) {}
-    Object(std::string& name, float radius, glm::vec3 color) : Sphere(radius), Name(name), Color(color) {}
-    Object(std::string& name, float radius, glm::vec3 color, glm::vec3 lighting) : Sphere(radius), Name(name), Color(color), LightingVector(lighting) {}
-};
 
 class App {
 public:
@@ -28,12 +13,26 @@ public:
         renderer.init();
 
         // define an object
-        object.Name = "Coral";
-        object.Color = glm::vec3(1.0f, 0.5f, 0.31f);
-        object.Sphere.setRadius(0.7f);
+        coral.Name = "Coral";
+        coral.Color = glm::vec3(1.0f, 0.5f, 0.31f);
+        coral.setRadius(0.3f);
+
+        lagoon.Name = "Lagoon";
+        lagoon.Color = glm::vec3(0.7f, 0.32f, 0.6f);
+        lagoon.setRadius(0.3f);
+        
+        coral.source = lagoon.source = false;
 
         // draw a sphere (test)
-        renderer.drawSphere(object.Sphere);
+        renderer.drawSphere(coral, glm::vec3(0.7f, 0.0f, 0.0f));
+        renderer.drawSphere(lagoon, glm::vec3(-0.7f, 0.0f, 0.0f));
+
+        light.Name = "Light";
+        light.Color = glm::vec3(1.0f, 1.0f, 1.0f);
+        light.source = true;
+        light.setRadius(0.3f);
+
+        renderer.drawSphere(light, glm::vec3(0.0f, 0.0f, -3.0f));
     }
 
     // Getter function to get a reference of the active window.
@@ -50,8 +49,10 @@ public:
 
 private:
     
-    // Sphere class instance and index data.
-    Object object;
+    // Sphere object instance.
+    Sphere coral;
+    Sphere lagoon;
+    Sphere light;
 
     // Render engine object.
     Renderer renderer = Renderer();

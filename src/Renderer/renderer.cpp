@@ -4,37 +4,30 @@
 Renderer::Renderer() 
     : camera(glm::vec3(0.0f, 0.0f, 3.0f)),
       window(nullptr),
-      VBO(0), VAO(0), EBO(0),
-      indexCount(0),
+      sphereVBO(0), sphereVAO(0), sphereEBO(0),
+      lightVBO(0), lightVAO(0), lightEBO(0),
       deltaTime(0.0f) { }
 
 void Renderer::init() {
     initGlfwWindow();
     createGlfwWindow(SCR_WIDTH, SCR_HEIGHT, APP_NAME);
     loadGLAD();
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glEnable(GL_DEPTH_TEST);
+
 
     ourShader.load(VSHADER_PATH, FSHADER_PATH);
 }
 
-void Renderer::drawElement() {
+void Renderer::drawFlatSurface() {
 
 }
 
 // Generate a sphere on the screen
-void Renderer::drawSphere(CubeSphere& sphere) {
-    const float* Vertices = sphere.getVertexData();
-    const unsigned int* Indices = sphere.getIndexData();
-    const size_t verticesSize = sphere.getVertexDataSize();
-    const size_t indicesSize = sphere.getIndexDataSize();
-
-    indexCount = sphere.getIndexCount();
-
-    setupVertexBuffer(
-        Vertices,
-        Indices,
-        verticesSize,
-        indicesSize
-    );
+void Renderer::drawSphere(Sphere& sphere, glm::vec3 position) {
+    sphere.Position = position;
+    setupSphereVertexBuffer(sphere);
+    spheres.push_back(&sphere);
 }
 
 // The main render loop of the program
@@ -49,15 +42,23 @@ void Renderer::runRenderLoop() {
         processKeyboardInput(window);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         ourShader.use();
 
         generateCameraView();
 
-        glBindVertexArray(VAO);
+        // Sphere rendering
+        for(Sphere* s : spheres) {
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), s->Position);
+            ourShader.setBool("source", s->source);
+            glm::vec3 inColor = s->Color;
+            ourShader.setVec3("inColor", inColor);
+            ourShader.setMat4("model", model);
+            glBindVertexArray(s->mesh.VAO);
+            glDrawElements(GL_TRIANGLES, s->mesh.indexCount, GL_UNSIGNED_INT, 0);
+        }
 
-        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -99,7 +100,6 @@ void Renderer::createGlfwWindow(unsigned int width, unsigned int height, const c
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
     glfwSetCursorPosCallback(window, mouseCallback);
-
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
@@ -116,50 +116,34 @@ void Renderer::generateCameraView() {
 
     glm::mat4 view = camera.getViewMatrix();
     ourShader.setMat4("view", view);
-
-    glm::mat4 model = glm::mat4(1.0f);
-    ourShader.setMat4("model", model);
 }
 
-void Renderer::setupVertexBuffer(const float* Vertices, const unsigned int* Indices, const size_t verticesSize, const size_t indicesSize) {
-    glGenBuffers(1, &VBO);
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &EBO);
+void Renderer::setupSphereVertexBuffer(Sphere& sphere) {
 
-    glBindVertexArray(VAO);
+    if (sphere.mesh.VAO != 0 && !sphere.remake) return;
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, verticesSize, Vertices, GL_STATIC_DRAW);
+    if (sphere.mesh.VAO == 0) {
+        glGenBuffers(1, &sphere.mesh.VBO);
+        glGenVertexArrays(1, &sphere.mesh.VAO);
+        glGenBuffers(1, &sphere.mesh.EBO);
+    }
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, Indices, GL_STATIC_DRAW);
+    glBindVertexArray(sphere.mesh.VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, sphere.mesh.VBO);
+    glBufferData(GL_ARRAY_BUFFER, sphere.geometry.getVertexDataSize(), sphere.geometry.getVertexData(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphere.mesh.EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphere.geometry.getIndexDataSize(), sphere.geometry.getIndexData(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    sphere.mesh.indexCount = sphere.geometry.getIndexCount();
+    sphere.remake = false;
 }
-
-void Renderer::updateVertexBuffer(CubeSphere sphere) {
-    const float* vertices = sphere.getVertexData();
-    const size_t verticesSize = sphere.getVertexDataSize();
-    const unsigned int* indices = sphere.getIndexData();
-    const size_t indicesSize = sphere.getIndexDataSize();
-
-    indexCount = sphere.getIndexCount();
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-    glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
-
-    glBindVertexArray(0);
-}
-
 
 void Renderer::displayFrameRate(float deltaTime) const {
 
@@ -220,29 +204,6 @@ void Renderer::processKeyboardInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
-
-    /*
-    // Control Sphere dimensions.
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-        object.Sphere.setSubdivisions(object.Sphere.getSubdivisions() + 1);
-        updateVertexBuffer();
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-        object.Sphere.setSubdivisions(object.Sphere.getSubdivisions() - 1);
-        updateVertexBuffer();
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
-        object.Sphere.setRadius(object.Sphere.getRadius() - 0.01f);
-        updateVertexBuffer();
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
-        object.Sphere.setRadius(object.Sphere.getRadius() + 0.01f);
-        updateVertexBuffer();
-    }
-    */
 
     // Control camera movement.
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {

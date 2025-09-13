@@ -1,4 +1,3 @@
-#include "settings.h"
 #include "application.h"
 
 int main() {
