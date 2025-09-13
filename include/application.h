@@ -32,7 +32,7 @@ public:
         light.source = true;
         light.setRadius(0.3f);
 
-        renderer.drawSphere(light, glm::vec3(0.0f, 0.0f, -3.0f));
+        renderer.drawSphere(light, glm::vec3(0.0f, 0.0f, -1.0f));
     }
 
     // Getter function to get a reference of the active window.

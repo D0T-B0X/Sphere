@@ -64,10 +64,29 @@ void Renderer::runRenderLoop() {
 
         if (lightSphere) {
             Sphere* s = lightSphere;
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), lightSphere->Position);
+
+            float t = (float)glfwGetTime();
+            glm::vec3 dynColor = {
+                0.5f + 0.5f * sinf(t),
+                0.5f + 0.5f * sinf(t + 2.094f),   // +120°
+                0.5f + 0.5f * sinf(t + 4.188f)    // +240°
+            };
+
+            glm::vec3 dynPos;
+            float r  = 0.3f;                
+            dynPos.x = cosf(t) * r;
+            dynPos.z = sinf(t) * r * cosf(t * 0.5f); 
+            dynPos.y = 1.0f + 0.5f * sinf(t * 2.0f); 
+
+            s->Position = dynPos;
+
+            ourShader.setVec3("lightPos", s->Position);
+
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), s->Position);
+            model = glm::scale(model, glm::vec3(0.35f));
             ourShader.setBool("source", s->source);
-            ourShader.setVec3("inColor", s->Color);
-            ourShader.setVec3("lightColor", s->Color);
+            ourShader.setVec3("inColor", dynColor);
+            ourShader.setVec3("lightColor", dynColor);
             ourShader.setMat4("model", model);
             glBindVertexArray(s->mesh.VAO);
             glDrawElements(GL_TRIANGLES, s->mesh.indexCount, GL_UNSIGNED_INT, 0);
