@@ -3,59 +3,62 @@
 
 #include "Renderer/renderer.h"
 
+// High–level application wrapper that owns persistent Sphere instances
+// and the Renderer. Constructs scene objects, registers them with the
+// renderer, then hands control to the render loop.
 class App {
 public:
-    // Constructor to initiate the application with the necessary parameters.
-    App(uint16_t width, uint16_t height, const char* name)
-    {
+    App() {
 
-        // initialize the renderer
+        // Initialize rendering subsystem (GLFW, GLAD, shader, state)
         renderer.init();
 
-        // define an object
-        coral.Name = "Coral";
-        coral.Color = glm::vec3(1.0f, 0.5f, 0.31f);
-        coral.setRadius(0.3f);
+        // Configure first sphere (Coral)
+        coral.Name  = "Coral";
+        coral.Color = {1.0f, 0.5f, 0.31f};
+        coral.setRadius(0.3f);          // marks geometry dirty for upload
 
-        lagoon.Name = "Lagoon";
-        lagoon.Color = glm::vec3(0.7f, 0.32f, 0.6f);
+        // Configure second sphere (Lagoon)
+        lagoon.Name  = "Lagoon";
+        lagoon.Color = {0.7f, 0.32f, 0.6f};
         lagoon.setRadius(0.3f);
-        
-        coral.source = lagoon.source = false;
 
-        // draw a sphere (test)
-        renderer.drawSphere(coral, glm::vec3(0.7f, 0.0f, 0.0f));
-        renderer.drawSphere(lagoon, glm::vec3(-0.7f, 0.0f, 0.0f));
+        // These are ordinary lit spheres (not light sources)
+        coral.source  = false;
+        lagoon.source = false;
 
-        light.Name = "Light";
-        light.Color = glm::vec3(1.0f, 1.0f, 1.0f);
-        light.source = true;
+        // Register visible spheres with the renderer at given positions
+        renderer.drawSphere(coral,  { 0.7f,  0.0f,  0.0f});
+        renderer.drawSphere(lagoon, {-0.7f,  0.0f,  0.0f});
+
+        // Configure light marker sphere
+        light.Name   = "Light";
+        light.Color  = {1.0f, 1.0f, 1.0f};
+        light.source = true;            // renderer will treat this as the light
         light.setRadius(0.3f);
 
-        renderer.drawSphere(light, glm::vec3(0.0f, 0.0f, -1.0f));
+        // Register light sphere (initial position in front)
+        renderer.drawSphere(light, {0.0f, 0.0f, -1.0f});
     }
 
-    // Getter function to get a reference of the active window.
+    // Returns the GLFW window pointer (read‑only)
     const GLFWwindow* getWindow() {
         return renderer.getWindow();
     }
 
-    // Function that runs the program.
+    // Enters the main rendering / event loop (blocks until exit)
     void run() {
-        
-        // Start the render process
         renderer.runRenderLoop();
     }
 
 private:
-    
-    // Sphere object instance.
+    // Persistent scene objects (must outlive renderer usage)
     Sphere coral;
     Sphere lagoon;
     Sphere light;
 
-    // Render engine object.
-    Renderer renderer = Renderer();
+    // Rendering engine instance
+    Renderer renderer;
 };
 
 #endif

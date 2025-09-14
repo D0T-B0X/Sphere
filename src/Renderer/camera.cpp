@@ -1,5 +1,6 @@
 #include "Renderer/camera.h"
 
+// Constructs a camera from position, up vector, yaw, and pitch
 Camera::Camera(
     glm::vec3 position, 
     glm::vec3 up, 
@@ -10,7 +11,7 @@ Camera::Camera(
     MovementSpeed(SPEED),
     MouseSensitivity(SENSITIVITY)
     {
-
+        // Set initial state and compute orientation vectors
         Position = position;
         WorldUp = up;
         Yaw = yaw;
@@ -18,6 +19,7 @@ Camera::Camera(
         updateCameraVectors();
 }
 
+// Constructs a camera from individual float components
 Camera::Camera(
     float posX,
     float posY,
@@ -32,6 +34,7 @@ Camera::Camera(
     MovementSpeed(SPEED),
     MouseSensitivity(SENSITIVITY)
     {
+        // Set initial state and compute orientation vectors
         Position = glm::vec3(posX, posY, posZ);
         Up = glm::vec3(upX, upY, upZ);
         Yaw = yaw;
@@ -39,11 +42,12 @@ Camera::Camera(
         updateCameraVectors();
 } 
 
-
+// Returns the view matrix derived from current camera transform
 glm::mat4 Camera::getViewMatrix() {
     return glm::lookAt(Position, Position + Front, Up);
 }
 
+// Moves the camera based on direction and frame time
 void Camera::processKeyboard(cameraMovement direction, float deltaTime) {
     float velocity = MovementSpeed * deltaTime;
     if (direction == cameraMovement::FORWARD) 
@@ -60,6 +64,7 @@ void Camera::processKeyboard(cameraMovement direction, float deltaTime) {
         Position -= Up * velocity;
 }
 
+// Adjusts yaw and pitch based on mouse movement
 void Camera::processMouseMovement(float xOffset, float yOffset, bool constrainPitch) {
     xOffset *= MouseSensitivity;
     yOffset *= MouseSensitivity;
@@ -67,6 +72,7 @@ void Camera::processMouseMovement(float xOffset, float yOffset, bool constrainPi
     Yaw += xOffset;
     Pitch += yOffset;
 
+    // Clamps pitch to avoid flipping
     if (constrainPitch) {
         if (Pitch > 89.0f)
             Pitch = 89.0f;
@@ -74,9 +80,11 @@ void Camera::processMouseMovement(float xOffset, float yOffset, bool constrainPi
             Pitch = -89.0f;
     }
 
+    // Recalculates direction vectors
     updateCameraVectors();
 }
 
+// Recalculates Front, Right, and Up vectors from yaw and pitch
 void Camera::updateCameraVectors() {
     glm::vec3 front;
     front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
@@ -84,7 +92,6 @@ void Camera::updateCameraVectors() {
     front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
 
     Front = glm::normalize(front);
-
     Right = glm::normalize(glm::cross(Front, WorldUp));
     Up    = glm::normalize(glm::cross(Right, Front));
 }

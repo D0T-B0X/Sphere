@@ -1,126 +1,126 @@
-#include <glad/glad.h>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <iostream>
-#include <glm/gtc/type_ptr.hpp>
 #include "Renderer/shader.h"
 
+// Loads, compiles, and links a vertex + fragment shader into a program
 void Shader::load(const char* vertexPath, const char* fragmentPath) {
-    // String to store vertex and fragment shaders.
     std::string vertexCode;
     std::string fragmentCode;
 
-    // Input Stream to read vertex and fragment shader files.
     std::ifstream vShaderFile;
     std::ifstream fShaderFile;
 
-    // Add exceptions to catch any issues while reading the file.
+    // Enable exception flags on the file streams
     vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);        
 
     try {
+        // Open shader source files
         vShaderFile.open(vertexPath);
         fShaderFile.open(fragmentPath);
 
         std::stringstream vertexStream, fragmentStream;
 
-        // Read file data into memory
-        vertexStream << vShaderFile.rdbuf();
+        // Read entire contents into string streams
+        vertexStream   << vShaderFile.rdbuf();
         fragmentStream << fShaderFile.rdbuf();
 
-        // Close files.
+        // Close files
         vShaderFile.close();
         fShaderFile.close();
 
-        // Store the stream data into the strings.
-        vertexCode = vertexStream.str();
+        // Convert stream data to std::string
+        vertexCode   = vertexStream.str();
         fragmentCode = fragmentStream.str();
     } catch (std::ifstream::failure e) {
         std::cout << "ERROR::SHADER_FILE::NOT_SUCCESSFULLY_READ" << std::endl;
     }
 
-    // Store the string of shaders as C styled strings.
+    // Raw C-string pointers for OpenGL
     const char* vCode = vertexCode.c_str();
     const char* fCode = fragmentCode.c_str();
 
-    // Create shader IDs for vertex and fragment shaders.
     unsigned int vertex, fragment;
 
-    // Generate and compile vertex shader in the GPU.
+    // Create and compile vertex shader
     vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &vCode, NULL);
     glCompileShader(vertex);
     checkCompileErrors(vertex, "VERTEX");
 
-    // Generate and compile fragment shader in the GPU.
+    // Create and compile fragment shader
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment, 1, &fCode, NULL);
     glCompileShader(fragment);
     checkCompileErrors(fragment, "FRAGMENT");
 
-    // Creates a program object.
+    // Create program and attach compiled shaders
     ID = glCreateProgram();
-
-    // Attach the compiled shader files to the program object.
     glAttachShader(ID, vertex);
     glAttachShader(ID, fragment);
 
-    // Link the attached shaders and make an executable for the GPU.
+    // Link program
     glLinkProgram(ID);
     checkCompileErrors(ID, "PROGRAM");
 
-    // Delete used shader objects.
+    // Delete individual shader objects (no longer needed after linking)
     glDeleteShader(vertex);
     glDeleteShader(fragment);
-
 }
 
+// Activates the shader program
 void Shader::use() {
     glUseProgram(ID);
 }
 
+// Deletes the shader program
 void Shader::terminate() {
     glDeleteProgram(ID);
 }
 
+// Sets a boolean (int) uniform
 void Shader::setBool(const char* name, int value) const {
     glUniform1i(glGetUniformLocation(ID, name), (int)value);
 }
 
+// Sets an integer uniform
 void Shader::setInt(std::string &name, int value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
+// Sets a float uniform
 void Shader::setFloat(std::string &name, float value) const {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
+// Sets a vec3 uniform
 void Shader::setVec3(const char* name, const glm::vec3& vec3) const {
     glUniform3fv(glGetUniformLocation(ID, name), 1, &vec3[0]);
 }
 
+// Sets a mat4 uniform
 void Shader::setMat4(const char* name, glm::mat4 mat) const {
     glUniformMatrix4fv(glGetUniformLocation(ID, name), 1, GL_FALSE, &mat[0][0]);
 }
 
+// Checks compile or link errors for a shader or program
 void Shader::checkCompileErrors(unsigned int shader, const char* type) {
     int success;
     char infoLog[1024];
 
-    // For all shaders.
+    // Shader object error path
     if (type != "PROGRAM") {
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-            std::cout << "ERROR::SHADER::COMPILATION_ERROR of type: " << type << "\n" << infoLog << std::endl;
+            std::cout << "ERROR::SHADER::COMPILATION_ERROR of type: " << type
+                      << "\n" << infoLog << std::endl;
         }
     } else {
-        // For program.
+        // Program object error path
         glGetProgramiv(shader, GL_LINK_STATUS, &success);
         if (!success) {
             glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-            std::cout << "ERROR::PROGRAM::LINK_ERROR of type: " << type << "\n" << infoLog << std::endl;
+            std::cout << "ERROR::PROGRAM::LINK_ERROR of type: " << type
+                      << "\n" << infoLog << std::endl;
         }
     }
 }
